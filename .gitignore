@@ -1,0 +1,11 @@
+# Editor directories and files
+*.code-workspace
+.idea/
+.vscode/
+
+# test files
+*.test
+
+# mocks
+mocks/
+*.mock.go

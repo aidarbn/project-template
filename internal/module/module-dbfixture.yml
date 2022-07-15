@@ -1,0 +1,14 @@
+- model: Object
+  rows:
+    - id: 56d1c6bf-9d3d-4265-8be3-3a5b8b356290
+      data: test data 0
+    - id: 56d1c6bf-9d3d-4265-8be3-3a5b8b356291
+      data: test data 1
+    - id: 56d1c6bf-9d3d-4265-8be3-3a5b8b356292
+      data: test data 2
+    - id: 56d1c6bf-9d3d-4265-8be3-3a5b8b356293
+      data: test data 3
+    - id: 56d1c6bf-9d3d-4265-8be3-3a5b8b356294
+      data: test data 4
+    - id: 56d1c6bf-9d3d-4265-8be3-3a5b8b356295
+      data: test data 5

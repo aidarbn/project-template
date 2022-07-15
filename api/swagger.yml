@@ -1,0 +1,215 @@
+openapi: 3.0.0
+info:
+  description: "Project template description"
+  title: Project Template
+  version: "1.0"
+paths:
+  /v1/objects:
+    get:
+      tags:
+        - Object
+      description: |
+        Gets list of objects
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+          description: The number of items to skip before starting to collect the result set
+          example: 0
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: The numbers of items to return
+          example: 20
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+          description: Order items by this parameter
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+          description: Sort on ascending ord descending order
+          example: asc
+      responses:
+        "200":
+          description: List of objects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObjectList"
+        "default":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Object
+      description: |
+        Creates new object
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Object"
+      responses:
+        "200":
+          description: Created object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Object"
+        "default":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /v1/objects/{id}:
+    get:
+      tags:
+        - Object
+      description: |
+        Creates new object
+      parameters:
+        - description: ID of the object
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: Existing object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Object"
+        "default":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - Object
+      description: |
+        Updates object
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Object"
+      parameters:
+        - description: ID of the object
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: Updated object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Object"
+        "default":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - Object
+      description: |
+        Deletes object
+      parameters:
+        - description: ID of the object
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: Updated object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                response:
+                  value: |-
+                    {
+                      "code": 200,
+                      "message": "successfully deleted"
+                    }
+        "default":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    ObjectList:
+      type: object
+      properties:
+        list:
+          type: array
+          items:
+            $ref: "#/components/schemas/Object"
+        count:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 100
+    Object:
+      type: object
+      properties:
+        id:
+          readOnly: true
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        data:
+          example: example data
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    Error:
+      required:
+        - code
+        - description
+      properties:
+        code:
+          example: 500
+          nullable: false
+          type: integer
+        description:
+          example: Internal Server Error
+          nullable: false
+          type: string

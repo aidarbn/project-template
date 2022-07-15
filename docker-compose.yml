@@ -1,0 +1,33 @@
+version: "3.7"
+
+services:
+  db:
+    image: postgres:13.2-alpine
+    restart: unless-stopped
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - ${DB_PORT}:5432
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    env_file:
+      - .env
+  app:
+    build:
+      context: "."
+    command: /bin/sh -c "/wait-for-it.sh db:5432 --timeout=120 && app"
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+    depends_on:
+      - db
+
+volumes:
+  dbdata:
