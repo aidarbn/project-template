@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine3.15 as build
+FROM golang:1.19-alpine3.16 as build
 
 ENV CGO_ENABLED=0 \
     GOOS=linux
@@ -14,7 +14,7 @@ RUN curl -L https://github.com/go-swagger/go-swagger/releases/download/v0.27.0/s
     sed -i 's,https://petstore.swagger.io/v2/swagger.json,swagger.yml,g' /go/bin/static/index.html
 
 # Download generating tool.
-RUN go install github.com/vektra/mockery/v2@v2.10.1
+RUN go install github.com/vektra/mockery/v2@v2.14.0
 
 WORKDIR /go/src/bitbucket.org/creativeadvtech/project-template
 
@@ -28,25 +28,20 @@ RUN go mod download
 COPY . .
 RUN go generate ./... && \
     go test -short ./... && \
-    go test -c ./internal/module -o /go/bin/module.test && \
     go install ./cmd/app
 
 RUN mv ./api/swagger.yml /go/bin/static/swagger.yml
 
-FROM alpine:3.15
+FROM alpine:3.16
 
 RUN apk add --no-cache curl bash
 
-# Download migration tool.
-RUN (curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar -xz -C /bin) && \
-    mv /bin/migrate.linux-amd64 /bin/migrate
-
-# Copy test files, swagger, migrations, application binary, and runnable bash script.
+# Copy swagger, migrations, application binary, and runnable bash script.
 WORKDIR /
 COPY --from=build /go/src/bitbucket.org/creativeadvtech/project-template/scripts/wait-for-it.sh ./wait-for-it.sh
-COPY --from=build /go/src/bitbucket.org/creativeadvtech/project-template/internal/module/module-dbfixture.yml ./module-dbfixture.yml
+COPY --from=build /go/src/bitbucket.org/creativeadvtech/project-template/pkg/database/*.yml ./
 COPY --from=build /go/src/bitbucket.org/creativeadvtech/project-template/migrations ./migrations
-COPY --from=build /go/bin/module.test /go/bin/app ./bin/
+COPY --from=build /go/bin/app ./bin/
 COPY --from=build /go/bin/static ./static
 RUN chmod +x ./wait-for-it.sh
 

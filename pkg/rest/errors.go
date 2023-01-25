@@ -8,23 +8,11 @@ import (
 	"net/http"
 )
 
-// swagger:response errorResponse
-type errorResponse struct {
-	// The status code of operation
-	// in: body
-	Body HTTPError
-}
-
 // HTTPError is a general error returned by REST API
-// swagger:model
 type HTTPError struct {
-	// HTTP status code
-	// Read Only: true
 	// Example: 500
 	Code int `json:"code"`
 
-	// Detailed error description
-	// Read Only: true
 	// Example: Unexpected internal server error
 	Description string `json:"description"`
 

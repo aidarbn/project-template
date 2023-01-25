@@ -9,3 +9,6 @@
 # mocks
 mocks/
 *.mock.go
+
+#grpc generated code
+*.pb.go

@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"bitbucket.org/creativeadvtech/project-template/pkg/rest"
+	"bitbucket.org/creativeadvtech/project-template/pkg/testutils"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestStatus_API(t *testing.T) {
-	w, r := rest.NewTestRequest()
+	w, r := testutils.NewTestRequest()
 	err := Status("0.0.0")(w, r)
 	require.NoError(t, err)
 	expected, err := json.Marshal(statusResponse{Status: "ok", Version: "0.0.0"})

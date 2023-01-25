@@ -2,12 +2,12 @@ package rest
 
 import (
 	"context"
+	"github.com/go-playground/validator/v10"
 	"reflect"
 	"strings"
 
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
-	"github.com/go-playground/validator/v10"
 	entranslate "github.com/go-playground/validator/v10/translations/en"
 )
 
@@ -71,9 +71,6 @@ func (s StructValidator) Validate(ctx context.Context, value any) error {
 	if err := s.valid.StructCtx(ctx, value); err != nil {
 		if fieldsErr, ok := err.(validator.ValidationErrors); ok {
 			trans, _ := s.uni.GetTranslator("en")
-			// TODO(eartemov): Report all available errors not only
-			// the first one. To implement this I need to change the
-			// error format first.
 			fErr := fieldsErr[0]
 			return BadRequestErrorf("%s: %s", fErr.Namespace(), fErr.Translate(trans))
 		}

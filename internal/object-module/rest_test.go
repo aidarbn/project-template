@@ -1,8 +1,9 @@
-package module
+package object_module
 
 import (
-	"bitbucket.org/creativeadvtech/project-template/internal"
-	rest2 "bitbucket.org/creativeadvtech/project-template/pkg/rest"
+	"bitbucket.org/creativeadvtech/project-template/internal/models"
+	"bitbucket.org/creativeadvtech/project-template/pkg/common"
+	"bitbucket.org/creativeadvtech/project-template/pkg/testutils"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -14,11 +15,11 @@ import (
 )
 
 const (
-	testID internal.UUID = "123e4567-e89b-12d3-a456-426655440000"
+	testID common.UUID = "123e4567-e89b-12d3-a456-426655440000"
 )
 
-func testObject() *internal.Object {
-	return &internal.Object{
+func testObject() *models.Object {
+	return &models.Object{
 		ID:        testID,
 		Data:      "some data",
 		CreatedAt: time.Date(2022, 07, 02, 00, 00, 00, 00, time.UTC),
@@ -26,9 +27,21 @@ func testObject() *internal.Object {
 	}
 }
 
-func testRecorderList() *internal.ObjectList {
-	return &internal.ObjectList{
-		List: []internal.Object{
+func testCreateObject() *createObject {
+	return &createObject{
+		Data: "some data",
+	}
+}
+
+func testUpdateObject() *updateObject {
+	return &updateObject{
+		Data: "some data",
+	}
+}
+
+func testObjectList() *common.List[models.Object] {
+	return &common.List[models.Object]{
+		List: []models.Object{
 			*testObject(),
 		},
 		Count: 1,
@@ -36,7 +49,7 @@ func testRecorderList() *internal.ObjectList {
 	}
 }
 
-func TestResource_list(t *testing.T) {
+func TestRest_list(t *testing.T) {
 	srv := &mockService{}
 	res := NewRest(srv)
 	t.Run("OK", func(t *testing.T) {
@@ -44,25 +57,25 @@ func TestResource_list(t *testing.T) {
 
 		srv.On("List", mock.Anything,
 			ListFilter{
-				Pagination: rest2.Pagination{
+				Pagination: common.Pagination{
 					Offset: 0,
 					Limit:  1,
 					SortBy: "created_at",
 					Order:  "asc",
 				},
 			}).
-			Return(testRecorderList(), nil)
+			Return(testObjectList(), nil)
 
-		w, r := rest2.NewTestRequest(
-			rest2.WithQuery("limit", 1),
-			rest2.WithQuery("offset", 0),
-			rest2.WithQuery("sortBy", "created_at"),
-			rest2.WithQuery("order", "asc"),
+		w, r := testutils.NewTestRequest(
+			testutils.WithQuery("limit", 1),
+			testutils.WithQuery("offset", 0),
+			testutils.WithQuery("sortBy", "created_at"),
+			testutils.WithQuery("order", "asc"),
 		)
 
 		err := res.list(w, r)
 		require.NoError(t, err)
-		expected, err := json.Marshal(testRecorderList())
+		expected, err := json.Marshal(testObjectList())
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, string(expected), w.Body.String())
@@ -73,7 +86,7 @@ func TestResource_list(t *testing.T) {
 
 		srv.On("List", mock.Anything,
 			ListFilter{
-				Pagination: rest2.Pagination{
+				Pagination: common.Pagination{
 					Offset: 0,
 					Limit:  1,
 					SortBy: "created_at",
@@ -82,11 +95,11 @@ func TestResource_list(t *testing.T) {
 			}).
 			Return(nil, fmt.Errorf("some error"))
 
-		w, r := rest2.NewTestRequest(
-			rest2.WithQuery("limit", 1),
-			rest2.WithQuery("offset", 0),
-			rest2.WithQuery("sortBy", "created_at"),
-			rest2.WithQuery("order", "asc"),
+		w, r := testutils.NewTestRequest(
+			testutils.WithQuery("limit", 1),
+			testutils.WithQuery("offset", 0),
+			testutils.WithQuery("sortBy", "created_at"),
+			testutils.WithQuery("order", "asc"),
 		)
 
 		err := res.list(w, r)
@@ -94,7 +107,7 @@ func TestResource_list(t *testing.T) {
 	})
 }
 
-func TestResource_get(t *testing.T) {
+func TestRest_get(t *testing.T) {
 	srv := &mockService{}
 	res := NewRest(srv)
 	t.Run("OK", func(t *testing.T) {
@@ -103,8 +116,8 @@ func TestResource_get(t *testing.T) {
 		srv.On("Get", mock.Anything, testID).
 			Return(testObject(), nil)
 
-		w, r := rest2.NewTestRequest(
-			rest2.WithPathParam("ObjectID", testID),
+		w, r := testutils.NewTestRequest(
+			testutils.WithPathParam("ObjectID", testID),
 		)
 
 		err := res.get(w, r)
@@ -121,8 +134,8 @@ func TestResource_get(t *testing.T) {
 		srv.On("Get", mock.Anything, testID).
 			Return(nil, fmt.Errorf("some error"))
 
-		w, r := rest2.NewTestRequest(
-			rest2.WithPathParam("ObjectID", testID),
+		w, r := testutils.NewTestRequest(
+			testutils.WithPathParam("ObjectID", testID),
 		)
 
 		err := res.get(w, r)
@@ -130,17 +143,17 @@ func TestResource_get(t *testing.T) {
 	})
 }
 
-func TestResource_create(t *testing.T) {
+func TestRest_create(t *testing.T) {
 	srv := &mockService{}
 	res := NewRest(srv)
 	t.Run("OK", func(t *testing.T) {
 		srv.Mock = mock.Mock{}
 
-		srv.On("Create", mock.Anything, testObject()).
+		srv.On("Create", mock.Anything, testCreateObject()).
 			Return(testObject(), nil)
 
-		w, r := rest2.NewTestRequest(
-			rest2.WithJSON(testObject()),
+		w, r := testutils.NewTestRequest(
+			testutils.WithJSON(testObject()),
 		)
 
 		err := res.create(w, r)
@@ -154,11 +167,11 @@ func TestResource_create(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		srv.Mock = mock.Mock{}
 
-		srv.On("Create", mock.Anything, testObject()).
+		srv.On("Create", mock.Anything, testCreateObject()).
 			Return(nil, fmt.Errorf("some error"))
 
-		w, r := rest2.NewTestRequest(
-			rest2.WithJSON(testObject()),
+		w, r := testutils.NewTestRequest(
+			testutils.WithJSON(testObject()),
 		)
 
 		err := res.create(w, r)
@@ -166,18 +179,18 @@ func TestResource_create(t *testing.T) {
 	})
 }
 
-func TestResource_update(t *testing.T) {
+func TestRest_update(t *testing.T) {
 	srv := &mockService{}
 	res := NewRest(srv)
 	t.Run("OK", func(t *testing.T) {
 		srv.Mock = mock.Mock{}
 
-		srv.On("Update", mock.Anything, testObject()).
+		srv.On("Update", mock.Anything, testID, testUpdateObject()).
 			Return(testObject(), nil)
 
-		w, r := rest2.NewTestRequest(
-			rest2.WithJSON(testObject()),
-			rest2.WithPathParam("ObjectID", testID),
+		w, r := testutils.NewTestRequest(
+			testutils.WithJSON(testObject()),
+			testutils.WithPathParam("ObjectID", testID),
 		)
 
 		err := res.update(w, r)
@@ -191,12 +204,12 @@ func TestResource_update(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		srv.Mock = mock.Mock{}
 
-		srv.On("Update", mock.Anything, testObject()).
+		srv.On("Update", mock.Anything, testID, testUpdateObject()).
 			Return(nil, fmt.Errorf("some error"))
 
-		w, r := rest2.NewTestRequest(
-			rest2.WithJSON(testObject()),
-			rest2.WithPathParam("ObjectID", testID),
+		w, r := testutils.NewTestRequest(
+			testutils.WithJSON(testObject()),
+			testutils.WithPathParam("ObjectID", testID),
 		)
 
 		err := res.update(w, r)
@@ -204,7 +217,7 @@ func TestResource_update(t *testing.T) {
 	})
 }
 
-func TestResource_delete(t *testing.T) {
+func TestRest_delete(t *testing.T) {
 	srv := &mockService{}
 	res := NewRest(srv)
 	t.Run("OK", func(t *testing.T) {
@@ -213,8 +226,8 @@ func TestResource_delete(t *testing.T) {
 		srv.On("Delete", mock.Anything, testID).
 			Return(nil)
 
-		w, r := rest2.NewTestRequest(
-			rest2.WithPathParam("ObjectID", testID),
+		w, r := testutils.NewTestRequest(
+			testutils.WithPathParam("ObjectID", testID),
 		)
 
 		err := res.delete(w, r)
@@ -231,8 +244,8 @@ func TestResource_delete(t *testing.T) {
 		srv.On("Delete", mock.Anything, testID).
 			Return(fmt.Errorf("some error"))
 
-		w, r := rest2.NewTestRequest(
-			rest2.WithPathParam("ObjectID", testID),
+		w, r := testutils.NewTestRequest(
+			testutils.WithPathParam("ObjectID", testID),
 		)
 
 		err := res.delete(w, r)

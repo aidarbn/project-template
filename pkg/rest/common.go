@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"bitbucket.org/creativeadvtech/project-template/pkg/common"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"io/ioutil"
@@ -49,32 +50,7 @@ func WriteOK(w http.ResponseWriter, v any) error {
 	return WriteJSON(w, v, http.StatusOK)
 }
 
-// SortingOrder represents the sorting order
-type SortingOrder string
-
-const (
-	// SOAscending means ascending sorting order
-	SOAscending SortingOrder = "asc"
-	// SODescending means descending sorting order
-	SODescending SortingOrder = "desc"
-)
-
-// Pagination of the lists.
-type Pagination struct {
-	// Pagination offset
-	Offset int `json:"offset" validate:"min=0"`
-
-	// Pagination limit
-	Limit int `json:"limit" validate:"min=0,max=100"`
-
-	// The field to use for sorting
-	SortBy string `json:"sortBy"`
-
-	// The order of sorting
-	Order SortingOrder `json:"order" validate:"omitempty,oneof=asc desc"`
-}
-
-func ReadPaginationParams(r *http.Request) Pagination {
+func ReadPaginationParams(r *http.Request) common.Pagination {
 	limit, err := strconv.Atoi(ReadQueryParam(r, "limit"))
 	if err != nil {
 		limit = 20
@@ -83,14 +59,14 @@ func ReadPaginationParams(r *http.Request) Pagination {
 	if err != nil {
 		offset = 0
 	}
-	var order SortingOrder
+	var order common.SortingOrder
 	if ReadQueryParam(r, "order") != "desc" {
-		order = SOAscending
+		order = common.SOAscending
 	} else {
-		order = SODescending
+		order = common.SODescending
 	}
 
-	return Pagination{
+	return common.Pagination{
 		Limit:  limit,
 		Offset: offset,
 		SortBy: ReadQueryParam(r, "sortBy"),

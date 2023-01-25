@@ -10,4 +10,15 @@
 mocks/
 *.mock.go
 
+# Git
 /.git
+.gitignore
+
+# Docker data
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Other
+.env
+README.md
